@@ -1,62 +1,125 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Calendar, MapPin, Clock } from 'lucide-react';
+import React, { useMemo, useState } from "react";
+import HeroSection from "../components/HeroSection";
+import EventCard from "../components/EventCard";
 
-export default function Home({ events = [] }) {
-  // Safety check to prevent crashing if events are missing
-  const safeEvents = events || [];
+export default function Home({ events }) {
+  const [q, setQ] = useState("");
+  const [venue, setVenue] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  // Extract all unique venues
+  const venues = useMemo(() => {
+    const s = new Set(events.map((e) => e.venue));
+    return Array.from(s);
+  }, [events]);
+
+  // Filter events
+  const filtered = events.filter((ev) => {
+    const qLower = q.trim().toLowerCase();
+    if (qLower) {
+      const inText = (ev.title + " " + (ev.description || ""))
+        .toLowerCase()
+        .includes(qLower);
+      if (!inText) return false;
+    }
+    if (venue && ev.venue !== venue) return false;
+    if (from && ev.date < from) return false;
+    if (to && ev.date > to) return false;
+    return true;
+  });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      {/* Hero Section */}
-      <section className="text-center py-12 px-4 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-xl">
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Discover Amazing Events</h1>
-        <p className="text-lg text-blue-100 max-w-2xl mx-auto">
-          Join the community and explore local gatherings, workshops, and celebrations.
-        </p>
-      </section>
+    <div className="min-h-screen">
+      {/* Cover Section */}
+      <HeroSection />
 
-      {/* Events Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {safeEvents.length > 0 ? (
-          safeEvents.map((event) => (
-            <div key={event.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-700">
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-2 dark:text-white">{event.title}</h3>
-                <div className="space-y-2 text-gray-600 dark:text-gray-300 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-blue-500" />
-                    <span>{event.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-blue-500" />
-                    <span>{event.location}</span>
-                  </div>
-                </div>
-                <Link 
-                  to={`/event/${event.id}`}
-                  className="mt-4 block text-center py-2 px-4 rounded-xl bg-gray-100 dark:bg-gray-700 dark:text-white font-medium hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-                >
-                  View Details
-                </Link>
-              </div>
+      <div id="events" className="container mx-auto px-4 mt-10">
+        <div className="mb-4 text-center">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+            Upcoming Events
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Browse campus activities or add new ones via the Add Event page.
+          </p>
+        </div>
+
+        {/* Filters */}
+        <div className="card mb-6 p-4 shadow-md bg-white dark:bg-slate-800 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input
+              placeholder="Search title or description..."
+              className="input border border-gray-300 dark:border-slate-600 rounded-md p-2"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            <select
+              className="select border border-gray-300 dark:border-slate-600 rounded-md p-2"
+              value={venue}
+              onChange={(e) => setVenue(e.target.value)}
+            >
+              <option value="">All venues</option>
+              {venues.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="date"
+                className="input border border-gray-300 dark:border-slate-600 rounded-md p-2"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+              />
+              <input
+                type="date"
+                className="input border border-gray-300 dark:border-slate-600 rounded-md p-2"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+              />
             </div>
-          ))
-        ) : (
-          <div className="col-span-full py-20 text-center bg-gray-50 dark:bg-gray-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No events found. Be the first to add one!</p>
           </div>
-        )}
+
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={() => {
+                setQ("");
+                setVenue("");
+                setFrom("");
+                setTo("");
+              }}
+              className="px-3 py-1 bg-indigo-100 dark:bg-slate-700 text-indigo-700 dark:text-white rounded hover:bg-indigo-200 transition"
+            >
+              Clear Filters
+            </button>
+            <div className="text-sm text-slate-500 dark:text-slate-400 ml-auto">
+              {filtered.length} result(s)
+            </div>
+          </div>
+        </div>
+
+        {/* Event Cards */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.length === 0 && (
+            <div className="card text-center p-6 bg-slate-100 dark:bg-slate-800 rounded-lg shadow">
+              No events found matching filters.
+            </div>
+          )}
+          {filtered.map((ev) => (
+            <EventCard key={ev.id} event={ev} />
+          ))}
+        </div>
       </div>
 
-      {/* Floating Plus Button - Fixed Route */}
-      <Link 
-        to="/add-event" 
-        className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-5 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 z-50 flex items-center justify-center"
-        title="Add New Event"
+      {/* Floating Add Button */}
+      <a
+        href="/add"
+        className="fab fixed bottom-6 right-6 bg-indigo-600 text-white text-3xl w-12 h-12 flex items-center justify-center rounded-full shadow-lg hover:bg-indigo-700 transition"
+        title="Add Event"
       >
-        <Plus size={28} strokeWidth={2.5} />
-      </Link>
+        +
+      </a>
     </div>
   );
 }
