@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import HeroSection from "../components/HeroSection";
 import EventCard from "../components/EventCard";
+import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 
 export default function Home({ events }) {
   const [q, setQ] = useState("");
@@ -111,15 +113,15 @@ export default function Home({ events }) {
           ))}
         </div>
       </div>
-
-      {/* Floating Add Button */}
-      <a
-        href="/add"
-        className="fab fixed bottom-6 right-6 bg-indigo-600 text-white text-3xl w-12 h-12 flex items-center justify-center rounded-full shadow-lg hover:bg-indigo-700 transition"
+{/* Floating Add Button */}
+      <Link 
+        to="/add-event" 
+        className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg z-50 flex items-center justify-center hover:scale-110 transition-transform"
         title="Add Event"
       >
-        +
-      </a>
+        <Plus size={24} />
+      </Link>
     </div>
   );
 }
+// DO NOT ADD ANOTHER EXPORT DEFAULT HERE
