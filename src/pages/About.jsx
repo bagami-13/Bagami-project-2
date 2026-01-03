@@ -34,7 +34,7 @@ export default function About() {
         transition={{ delay: 0.5, duration: 0.8 }}
       >
         <img
-          src="bagami.jpg"
+          src="/bagami.jpg"  
           alt="Bagami"
           className="w-28 h-28 rounded-full mx-auto mb-4 border-4 border-blue-500 shadow-md"
         />

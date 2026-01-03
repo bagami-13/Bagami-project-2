@@ -1,48 +1,51 @@
-import React, { useState, useEffect } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { SunIcon, MoonIcon, PlusIcon } from './Icons'
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Menu, X } from 'lucide-react'; // These are your icons
+import { motion, AnimatePresence } from 'framer-motion'; // For the smooth slide
 
-export default function Navbar(){
-  const [theme, setTheme] = useState(() => {
-    try { return localStorage.getItem('bb_theme') || 'light' } catch(e){ return 'light' }
-  })
-  const navigate = useNavigate()
-
-  useEffect(()=>{
-    try{
-      localStorage.setItem('bb_theme', theme)
-      if(theme === 'dark') document.documentElement.classList.add('dark')
-      else document.documentElement.classList.remove('dark')
-    }catch(e){}
-  },[theme])
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false); // Switch for the menu
 
   return (
-    <div className="w-full flex items-center justify-between py-3">
-      <div className="flex items-center gap-3">
-        <Link to="/" className="brand">Bitxbase Events Hub</Link>
-        <nav className="hidden md:flex gap-4 text-sm text-slate-600 dark:text-slate-300">
-          <NavLink to="/" end className={({isActive}) => isActive ? 'font-semibold' : ''}>Home</NavLink>
-          <NavLink to="/add" className={({isActive}) => isActive ? 'font-semibold' : ''}>Add Event</NavLink>
-          <NavLink to="/about" className={({isActive}) => isActive ? 'font-semibold' : ''}>About</NavLink>
-        </nav>
-      </div>
+    <nav className="bg-white shadow-md p-4 sticky top-0 z-50">
+      <div className="flex justify-between items-center max-w-6xl mx-auto">
+        <Link to="/" className="font-bold text-blue-600 text-xl">
+          Bitxbase Events Hub
+        </Link>
 
-      <div className="flex items-center gap-3">
-        <button
-          aria-label="toggle theme"
-          onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-          className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"
+        {/* HAMBURGER BUTTON: Visible ONLY on mobile (md:hidden) */}
+        <button 
+          className="md:hidden text-gray-700" 
+          onClick={() => setIsOpen(!isOpen)}
         >
-          {theme === 'dark' ? <SunIcon/> : <MoonIcon/>}
+          {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
 
-        <button
-          onClick={() => navigate('/add')}
-          className="hidden md:inline-flex items-center gap-2 bg-brand-500 text-white px-3 py-2 rounded-md shadow"
-        >
-          <PlusIcon /> Add Event
-        </button>
+        {/* DESKTOP LINKS: Hidden on mobile, visible on laptop (md:flex) */}
+        <div className="hidden md:flex gap-8">
+          <Link to="/" className="hover:text-blue-500">Home</Link>
+          <Link to="/add-event" className="hover:text-blue-500">Add Event</Link>
+          <Link to="/about" className="hover:text-blue-500">About</Link>
+        </div>
       </div>
-    </div>
-  )
-}
+
+      {/* MOBILE MENU: Only shows when button is clicked */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="md:hidden flex flex-col gap-4 mt-4 border-t pt-4"
+          >
+            <Link to="/" onClick={() => setIsOpen(false)}>Home</Link>
+            <Link to="/add-event" onClick={() => setIsOpen(false)}>Add Event</Link>
+            <Link to="/about" onClick={() => setIsOpen(false)}>About</Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+};
+
+export default Navbar;
