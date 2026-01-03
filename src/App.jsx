@@ -1,57 +1,37 @@
-import React, { useEffect, useState } from "react"
-import { Routes, Route, useLocation } from "react-router-dom"
-import { AnimatePresence } from "framer-motion"
-import Navbar from "./components/Navbar"
-import Footer from "./components/Footer"
-import Home from "./pages/Home"
-import AddEvent from "./pages/AddEvent"
-import EventDetails from "./pages/EventDetails"
-import About from "./pages/About"
-import sampleEvents from "./data/sampleEvents"
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import AddEvent from './pages/AddEvent';
+import About from './pages/About';
+import { Plus } from 'lucide-react'; // Import the Plus icon
+import { Link } from 'react-router-dom';
 
-const STORAGE_KEY = "bitxbase_events_v2"
-
-export default function App() {
-  const [events, setEvents] = useState([])
-  const location = useLocation()
-
-  useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      try {
-        setEvents(JSON.parse(raw))
-      } catch (e) {
-        setEvents(sampleEvents)
-      }
-    } else {
-      setEvents(sampleEvents)
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(events))
-  }, [events])
-
-  const addEvent = (ev) => {
-    setEvents((prev) => [{ id: Date.now().toString(), ...ev }, ...prev])
-  }
-
+function App() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <Router>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        {/* 1. The Navbar stays at the top of EVERY page */}
+        <Navbar />
 
-      <main className="container flex-1 py-6">
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<Home events={events} />} />
-            <Route path="/add" element={<AddEvent addEvent={addEvent} />} />
-            <Route path="/events/:id" element={<EventDetails events={events} />} />
+        {/* 2. This is the Switcher: it only shows ONE page at a time */}
+        <main className="max-w-7xl mx-auto p-4">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/add-event" element={<AddEvent />} />
             <Route path="/about" element={<About />} />
           </Routes>
-        </AnimatePresence>
-      </main>
+        </main>
 
-      <Footer />
-    </div>
-  )
+        {/* 3. The Floating Plus Button (Visible on all pages) */}
+        <Link 
+          to="/add-event" 
+          className="fixed bottom-10 right-10 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-2xl transition-all hover:scale-110 z-50 flex items-center justify-center"
+        >
+          <Plus size={32} strokeWidth={2.5} />
+        </Link>
+      </div>
+    </Router>
+  );
 }
+
+export default App;
